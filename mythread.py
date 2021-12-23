@@ -1,27 +1,15 @@
-import demjson
-import json
+from threading import Thread
 
 
-def read(path):  # 读json文件
-	with open(path, mode="r", encoding="utf-8") as file:
-		datas = demjson.decode(file.read())
-	print(f"READ: {path}")
-	return datas
+class MyThread(Thread):
+	def __init__(self, func, *args):
+		super().__init__()
 
+		self.func = func
+		self.args = args
 
-def write(path, datas):  # 写json文件
-	with open(path, mode="w", encoding="utf-8") as file:
-		file.write(demjson.encode(datas))
-	print(f"WRITE: {path}")
+		self.setDaemon(True)
+		self.start()
 
-
-def jsn2dic(jsn):  # json字符串转为字典
-	dic = {"null": "None", "true": "True", "false": "False"}
-	for d in dic:
-		jsn = jsn.replace(d, dic[d])
-	return eval(jsn)
-
-
-def beautify(jsn):  # 格式化json字符串
-	dic = jsn2dic(jsn)
-	print(json.dumps(dic, indent=4, ensure_ascii=False))
+	def run(self):
+		self.func(*self.args)
