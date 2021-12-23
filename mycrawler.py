@@ -6,56 +6,56 @@ import os
 import re
 import time
 
-headers = {
-	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638"
-	".69 Safari/537.36"
-}  # 请求头
 
+class MyCrawler:
+	HEADERS = {
+		"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0."
+		"4664.55 Safari/537.36",
+	}  # 请求头
 
-def set_headers(cookie="", encoding="utf-8"):  # 设置请求头
-	headers["cookie"] = cookie
-	headers["encoding"] = encoding
+	def __init__(self, cookie="", encoding="utf-8"):
+		self.HEADERS["cookie"] = cookie
+		self.encoding = encoding
 
+	def crawl(self, urls, rgx=None, folder=""):  # 异步爬取队列
+		params = (
+			{"count": -1},  # 计数器
+			math.ceil(math.log(len(urls), 10)),  # 计数器补0位数
+			folder,  # 文件夹
+			self.encoding,  # 编码
+			re.compile(rgx, re.S) if rgx else None,  # 编译正则表达式
+			{}  # url字典
+		)
 
-def crawl(urls, rgx=None, folder=""):  # 异步爬取队列
-	params = (
-		{"count": -1},  # 计数器
-		math.ceil(math.log(len(urls), 10)),  # 计数器补0位数
-		folder,  # 文件夹
-		re.compile(rgx, re.S) if rgx else None,  # 编译正则表达式
-		{}  # url字典
-	)
+		if (not folder and len(urls) > 12000) or (folder and len(urls) > 1000):  # 判断是否异步过载
+			return print("[OVERLOAD]")
+		if folder and not os.path.exists(folder):
+			os.mkdir(folder)  # 新建文件夹
+		asyncio.run(self.main(urls, params))  # 异步执行爬取任务列表
+		if not folder:
+			return [params[5][url] for url in urls if url in params[5]]  # 按序返回数据
 
-	if (not folder and len(urls) > 12000) or (folder and len(urls) > 1000):  # 判断是否异步过载
-		return print("[OVERLOAD]")
-	if folder and not os.path.exists(folder):
-		os.mkdir(folder)  # 新建文件夹
-	asyncio.run(main(urls, params))  # 异步执行爬取任务列表
-	if not folder:
-		return [params[4][url] for url in urls if url in params[4]]  # 按序返回数据
+	async def main(self, urls, params):  # 任务列表
+		timer = time.time()  # 起始时间
+		connector = aiohttp.TCPConnector(ssl=False)  # 取消ssl验证
+		async with aiohttp.ClientSession(headers=self.HEADERS, connector=connector) as session:
+			await asyncio.gather(*[asyncio.ensure_future(self.fetch(url, session, params)) for url in urls])
+		print(f"TIMER: {time.time() - timer}")  # 计时
 
-
-async def main(urls, params):  # 任务列表
-	timer = time.time()  # 起始时间
-	connector = aiohttp.TCPConnector(ssl=False)  # 取消ssl验证
-	async with aiohttp.ClientSession(headers=headers, connector=connector) as session:
-		await asyncio.gather(*[asyncio.ensure_future(fetch(url, session, params)) for url in urls])
-	print(f"TIMER: {time.time() - timer}")  # 计时
-
-
-async def fetch(url, session, params):  # 异步爬取单个
-	async with session.get(url) as response:
-		params[0]["count"] += 1  # 计数
-		msg = f"[{params[0]['count']:0{params[1]}}]  {params[2]}  {url}"  # url信息
-		try:
-			print(msg)  # 打印url信息
-			response.raise_for_status()  # 判断页面连接状态
-			if params[2]:  # 爬取图片
-				async with aiofiles.open(f"{params[2]}/{url.split('/')[-1]}", mode="wb") as file:
-					datas = await response.read()
-					await file.write(datas)
-			else:  # 爬取文本
-				data = await response.text(encoding=headers["encoding"])
-				params[4][url] = params[3].findall(data) if params[3] else data
-		except Exception as e:
-			print(f"{msg}    {e}")  # 打印异常信息
+	@staticmethod
+	async def fetch(url, session, params):  # 异步爬取单个
+		async with session.get(url) as response:
+			params[0]["count"] += 1  # 计数
+			msg = f"[{params[0]['count']:0{params[1]}}]  {params[2]}  {url}"  # url信息
+			try:
+				print(msg)  # 打印url信息
+				response.raise_for_status()  # 判断页面连接状态
+				if params[2]:  # 爬取图片
+					async with aiofiles.open(f"{params[2]}/{url.split('/')[-1]}", mode="wb") as file:
+						datas = await response.read()
+						await file.write(datas)
+				else:  # 爬取文本
+					data = await response.text(encoding=params[3])
+					params[5][url] = params[4].findall(data) if params[4] else data
+			except Exception as e:
+				print(f"{msg}    {e}")  # 打印异常信息
