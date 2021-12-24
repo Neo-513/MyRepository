@@ -20,7 +20,7 @@ class Recorder:
 
 	def __init__(self):
 		self.root = tk.Tk()  # 主窗口
-		self.video = None
+		self.video, self.button_record = None, None
 
 		self.flag = 0  # 录屏执行标识
 		self.closed_setup = 1  # 设置窗口关闭状态
@@ -43,6 +43,8 @@ class Recorder:
 		self.var_delay = tk.StringVar()  # 准备时间
 		self.var_duration = tk.StringVar()  # 录制时长
 
+		self.a, self.q = None, None
+
 		self._init_root()
 		self._init_node_state()
 		self.root.mainloop()  # 运行主窗口
@@ -56,7 +58,7 @@ class Recorder:
 			self.video = cv2.VideoWriter(filepath, fourcc=self.FOURCC, fps=self.FPS, frameSize=self.FRAME_SIZE)  # 视频
 
 			self.var_filename.set(filename)
-			self.var_record.set("停止")
+			self.var_record.set("■")
 
 			delay = int(self.delay)  # 准备时间
 			if delay > 0:
@@ -66,9 +68,11 @@ class Recorder:
 
 				self.state.config(fg="red")  # 设置变红
 				self.state.config(textvariable=self.var_delay)  # 倒计时
+				self.button_record.config(state="disabled")  # 禁用按钮
 				for i in range(delay, 0, -1):  # 准备时间倒计时
 					self.var_delay.set(self.sec2msg(i))
 					time.sleep(1)
+				self.button_record.config(state="normal")  # 启用按钮
 			self.state.config(textvariable=self.var_record_time)  # 录屏计时
 			self.state.config(fg="black")  # 设置变黑
 
@@ -93,7 +97,7 @@ class Recorder:
 
 	def terminate(self):  # 终止录屏
 		self.video.release()  # 释放视频资源
-		self.var_record.set("开始")
+		self.var_record.set("●")
 		self.state.config(fg="blue")  # 设置变蓝
 
 	def _init_root(self):  # 初始化主窗口
@@ -105,9 +109,11 @@ class Recorder:
 		self.var_current_fps.set("0.00 fps")
 		self.var_real_time.set(self.sec2msg())
 		self.var_delay.set(self.sec2msg())
-		self.var_record.set("开始")
+		self.var_record.set("●")
 
-		tk.Button(self.root, textvariable=self.var_record, command=lambda: MyThread(self.record)).grid(row=0, column=0)
+		self.button_record = tk.Button(self.root, textvariable=self.var_record, command=lambda: MyThread(self.record))
+		self.button_record.config(fg="red", font=("", ))
+		self.button_record.grid(row=5, column=0, columnspan=2)
 
 		tk.Label(self.root, text="当前录制时长: ").grid(row=1, column=0)
 		tk.Label(self.root, text="当前平均帧率: ").grid(row=2, column=0)
@@ -169,9 +175,9 @@ class Recorder:
 			self.var_delay.set(self.delay)
 			self.var_duration.set(self.duration)
 
-			tk.Button(node_setup, text="选择目录", command=select_folder).grid(row=0, column=2)
-			tk.Button(node_setup, text="确定", command=submit).grid(row=4, column=1)
-			tk.Button(node_setup, text="取消", command=terminate).grid(row=4, column=2)
+			tk.Button(node_setup, text="选择目录", command=select_folder).grid(row=0, column=2, columnspan=2)
+			tk.Button(node_setup, text="确定", command=submit).grid(row=4, column=2)
+			tk.Button(node_setup, text="取消", command=terminate).grid(row=4, column=3)
 
 			tk.Entry(node_setup, textvariable=self.var_folder).grid(row=0, column=1)
 			tk.Entry(node_setup, textvariable=self.var_fps).grid(row=1, column=1)
@@ -180,11 +186,11 @@ class Recorder:
 
 			tk.Label(node_setup, text="保存至").grid(row=0, column=0)
 			tk.Label(node_setup, text="帧率").grid(row=1, column=0)
-			tk.Label(node_setup, text="(10-25)fps").grid(row=1, column=2)
 			tk.Label(node_setup, text="准备时间").grid(row=2, column=0)
-			tk.Label(node_setup, text="(0-5)秒").grid(row=2, column=2)
 			tk.Label(node_setup, text="录制时长").grid(row=3, column=0)
-			tk.Label(node_setup, text="(0-60)分钟").grid(row=3, column=2)
+			tk.Label(node_setup, text="(10-25)fps").grid(row=1, column=2, columnspan=2)
+			tk.Label(node_setup, text="(0-5)秒").grid(row=2, column=2, columnspan=2)
+			tk.Label(node_setup, text="(0-60)分钟").grid(row=3, column=2, columnspan=2)
 
 	@staticmethod
 	def sec2msg(sec=0):  # 格式化秒数
