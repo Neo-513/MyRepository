@@ -31,19 +31,19 @@ class MyCrawler:
 			return print("[OVERLOAD]")
 		if folder and not os.path.exists(folder):
 			os.mkdir(folder)  # 新建文件夹
-		asyncio.run(self.main(urls, params))  # 异步执行爬取任务列表
+		asyncio.run(self._main(urls, params))  # 异步执行爬取任务列表
 		if not folder:
 			return [params[5][url] for url in urls if url in params[5]]  # 按序返回数据
 
-	async def main(self, urls, params):  # 任务列表
+	async def _main(self, urls, params):  # 任务列表
 		timer = time.time()  # 起始时间
 		connector = aiohttp.TCPConnector(ssl=False)  # 取消ssl验证
 		async with aiohttp.ClientSession(headers=self.HEADERS, connector=connector) as session:
-			await asyncio.gather(*[asyncio.ensure_future(self.fetch(url, session, params)) for url in urls])
+			await asyncio.gather(*[asyncio.ensure_future(self._fetch(url, session, params)) for url in urls])
 		print(f"TIMER: {time.time() - timer}")  # 计时
 
 	@staticmethod
-	async def fetch(url, session, params):  # 异步爬取单个
+	async def _fetch(url, session, params):  # 异步爬取单个
 		async with session.get(url) as response:
 			params[0]["count"] += 1  # 计数
 			msg = f"[{params[0]['count']:0{params[1]}}]  {params[2]}  {url}"  # url信息
