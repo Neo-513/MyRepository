@@ -36,7 +36,7 @@ class MyCrawler:
 			return [params[5][url] for url in urls if url in params[5]]  # 按序返回数据
 
 	async def _main(self, urls, params):  # 任务列表
-		timer = time.time()  # 起始时间
+		timer = time.time()  # 计时器
 		connector = aiohttp.TCPConnector(ssl=False)  # 取消ssl验证
 		async with aiohttp.ClientSession(headers=self.HEADERS, connector=connector) as session:
 			await asyncio.gather(*[asyncio.ensure_future(self._fetch(url, session, params)) for url in urls])
