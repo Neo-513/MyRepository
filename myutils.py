@@ -78,12 +78,12 @@ def beautify_jsn(jsn):  # 格式化打印json字符串
 
 
 def myprint(items):  # 打印
-		if isinstance(items, dict):
-			for k, v in items.items():
-				print(f"{k}    {v}")
-		else:
-			for item in items:
-				print(item)
+	if isinstance(items, dict):
+		for k, v in items.items():
+			print(f"{k}    {v}")
+	else:
+		for item in items:
+			print(item)
 
 
 def timing(func):  # 统计时间
@@ -95,6 +95,51 @@ def timing(func):  # 统计时间
 	return callback
 
 
-def analyze_nlp(self, kws):  # 中文分词
+def analyze_nlp(kws):  # 中文分词
 	keywords = sum(map(lambda x: jieba.lcut(x), kws), [])
-	return self.lst2dic(keywords)
+	return lst2dic(keywords)
+
+
+'''
+for i in range(timeout * 2 + 1):  # 显示进度条
+	print(f"\rLOADING:{(i / (timeout * 2)) * 100:>6.2f}% {'■' * i}{'□' * (timeout * 2 - i)}", end="")
+	time.sleep(0.5)
+
+
+# import win32api
+# import win32con
+
+
+def remove_repeat(folder_src, folder_dst):  # 文件去重
+	files_src = []  # 不变
+	for folder in os.listdir(folder_src):
+		files_src += os.listdir("%s/%s" % (folder_src, folder))
+	files_dst = os.listdir(folder_dst)  # 变
+
+	for file_dst in files_dst:
+		if file_dst in files_src:
+			src = "%s/%s" % (folder_dst, file_dst)
+			dst = "E:/recycle/" + file_dst
+			os.rename(src, dst)
+			print("REPEAT: " + file_dst)
+		else:
+			print("NOT REPEAT: " + file_dst)
+
+def click(x, y, interval=0.3):
+	win32api.SetCursorPos([x, y])
+	win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN | win32con.MOUSEEVENTF_LEFTUP, 0, 0)
+	time.sleep(interval)
+
+
+def keyboard(key):
+	win32api.keybd_event(key, 0, 0, 0)
+	win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+
+def normalize_symbol(data):
+	for i in range(len(data)):
+		d = data[i]
+		if 65296 <= ord(d) <= 65305 or 65313 <= ord(d) <= 65339 or 65345 <= ord(d) <= 65371:
+			data = data.replace(d, chr(ord(d) - 65248))
+	return data
+'''
