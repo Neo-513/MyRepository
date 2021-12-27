@@ -1,6 +1,111 @@
+from PIL import ImageGrab
 from tkinter.filedialog import askdirectory
+import cv2
+import numpy as np
 import os
+import pyaudio
+import time
 import tkinter as tk
+# import wave
+
+
+class Recorder:
+	"""视频默认参数"""
+	FOURCC = cv2.VideoWriter_fourcc(*"mp4v")  # mp4编码器
+	FPS = 15  # 帧率（通过计算近似所得）
+	FRAME_SIZE = ImageGrab.grab().size  # 屏幕尺寸
+
+	"""音频默认参数"""
+	CHANNELS = 1  # 单声道
+	FORMAT = pyaudio.paInt16  # 采样位数
+	RATE = 44100  # 采样频率
+	BUFFER = 1024  # 缓冲区帧数
+
+	def __init__(self):
+		self.gui = GUI(self.func_record)
+		self.video = None
+		# self.video, self.audio, self.stream, self.pa = None, None, None, None  # 视频音频相关资源
+		# self.datas = None
+
+	def func_record(self):  # 录制
+		if not self.gui.flag_record:
+			self.gui.flag_record = 1  # 激活运行标志
+
+			filepath = f"{self.gui.folder.rstrip('/')}/{time.strftime('%Y%m%d%H%M%S', time.localtime())}"  # 文件路径
+			self.video = cv2.VideoWriter(f"{filepath}.mp4", fourcc=self.FOURCC, fps=self.FPS, frameSize=self.FRAME_SIZE)
+			'''self.pa = pyaudio.PyAudio()  # 创建对象
+			a = time.time()
+			self.stream = self.pa.open(
+				channels=self.CHANNELS, format=self.FORMAT, rate=self.RATE, frames_per_buffer=self.BUFFER, input=True
+			)
+			print(time.time() - a, a - s)
+			self.video, self.audio = self.get_resource(filepath)'''
+			self.count_down(filepath)  # 倒计时
+
+			timer = time.time()  # 计时器
+			count = 0  # 计数器
+			while self.gui.flag_record:
+				img = self.shot()
+				self.video.write(img)  # 将屏幕快照添加至视频中
+
+				if count % self.gui.fps == 0:  # 每隔固定帧数刷新信息
+					current_time = time.time() - timer  # 当前所计时间
+					'''标签赋值'''
+					self.gui.var_record_time.set(self.gui.sec2msg(count / self.gui.fps))
+					self.gui.var_current_fps.set(f"{(count / current_time):.2f} fps")
+					self.gui.var_real_time.set(self.gui.sec2msg(current_time))
+				count += 1
+				if count >= self.gui.fps * self.gui.duration * 60:
+					self.terminate()
+		else:
+			self.terminate()
+
+	def terminate(self):  # 录制终结
+		self.gui.flag_record = 0  # 重置运行标志
+		self.gui.var_record.set("●")
+		self.gui.label_state.config(fg="blue")
+		self.video.release()  # 释放视频资源
+		'''
+		self.audio.close()  # 关闭音频文件
+		self.stream.stop_stream()  # 停止流
+		self.stream.close()  # 关闭流
+		self.pa.terminate()  # 终结对象
+		'''
+
+	def count_down(self, filepath):  # 倒计时
+		self.gui.var_record_time.set(self.gui.sec2msg())
+		self.gui.var_current_fps.set("0.00 fps")
+		self.gui.var_real_time.set(self.gui.sec2msg())
+		self.gui.var_filename.set(filepath.split("/")[-1])
+		self.gui.var_record.set("■")
+
+		if self.gui.delay > 0:
+			self.gui.label_state.config(textvariable=self.gui.var_delay, fg="red")
+			self.gui.button_record.config(state="disabled")  # 禁用按钮
+			for i in range(self.gui.delay, 0, -1):
+				self.gui.var_delay.set(self.gui.sec2msg(self.gui.delay))
+				time.sleep(1)
+			self.gui.button_record.config(state="normal")  # 启用按钮
+		self.gui.label_state.config(textvariable=self.gui.var_record_time, fg="black")  # 录屏计时
+
+	@staticmethod
+	def shot():  # 抓取屏幕
+		rgb = ImageGrab.grab()  # 抓取屏幕快照
+		bgr = cv2.cvtColor(np.asarray(rgb), cv2.COLOR_RGB2BGR)  # rgb格式转换为opencv的bgr格式
+		return bgr
+
+	'''def get_resource(self, filepath):  # 创建视频音频资源
+		video = cv2.VideoWriter(f"{filepath}.mp4", fourcc=self.FOURCC, fps=self.FPS, frameSize=self.FRAME_SIZE)
+		audio = wave.open(f"{filepath}.wav", "wb")  # 音频
+		audio.setnchannels(self.CHANNELS)  # 设置声道
+		audio.setsampwidth(self.pa.get_sample_size(self.FORMAT))  # 设置采样位数
+		audio.setframerate(self.RATE)  # 设置采样频率
+		return video, audio'''
+
+	def run(self):  # 运行
+		self.gui.init_root()
+		self.gui.init_state()
+		self.gui.root.mainloop()
 
 
 class GUI:
@@ -21,7 +126,8 @@ class GUI:
 		self.var_real_time = tk.StringVar()  # 实际录制时长
 		self.var_filename = tk.StringVar()  # 文件名
 		self.var_record = tk.StringVar()  # 录制按钮文本
-		self.button_record = None  # 录制按钮
+		self.button_record = None
+		self.button_record = tk.Button(self.root, command=self.func_record)  # 录制按钮
 
 		'''状态窗口'''
 		self.label_state = None  # 倒计时标签
@@ -48,8 +154,7 @@ class GUI:
 		self.var_record.set("●")
 
 		'''按钮'''
-		self.button_record = tk.Button(self.root, textvariable=self.var_record, fg="red", font=("",))
-		self.button_record.config(command=self.func_record)
+		self.button_record.config(textvariable=self.var_record, fg="red", font=("",))
 		self.button_record.grid(row=5, column=0, columnspan=2)
 
 		'''标签'''
@@ -136,11 +241,6 @@ class GUI:
 			tk.Label(setup, text="(0-5)秒").grid(row=2, column=2, columnspan=2)
 			tk.Label(setup, text="(0-60)分钟").grid(row=3, column=2, columnspan=2)
 
-	def run(self):  # 运行
-		self.init_root()
-		self.init_state()
-		self.root.mainloop()
-
 	@staticmethod
 	def sec2msg(sec=0):  # 格式化秒数
 		if sec == 0:
@@ -152,5 +252,5 @@ class GUI:
 
 
 if __name__ == "__main__":
-	gui = GUI(None)
-	gui.run()
+	recorder = Recorder()
+	recorder.run()
