@@ -1,4 +1,5 @@
 from PIL import ImageGrab
+from threading import Thread
 from tkinter.filedialog import askdirectory
 import cv2
 import numpy as np
@@ -126,8 +127,7 @@ class GUI:
 		self.var_real_time = tk.StringVar()  # 实际录制时长
 		self.var_filename = tk.StringVar()  # 文件名
 		self.var_record = tk.StringVar()  # 录制按钮文本
-		self.button_record = None
-		self.button_record = tk.Button(self.root, command=self.func_record)  # 录制按钮
+		self.button_record = None  # 录制按钮
 
 		'''状态窗口'''
 		self.label_state = None  # 倒计时标签
@@ -154,7 +154,8 @@ class GUI:
 		self.var_record.set("●")
 
 		'''按钮'''
-		self.button_record.config(textvariable=self.var_record, fg="red", font=("",))
+		self.button_record = tk.Button(self.root, textvariable=self.var_record, fg="red", font=("",))
+		self.button_record.config(command=lambda: MyThread(self.func_record))
 		self.button_record.grid(row=5, column=0, columnspan=2)
 
 		'''标签'''
@@ -249,6 +250,20 @@ class GUI:
 		minute = int((sec % 3600) / 60)
 		second = int(sec % 60)
 		return f"{hour:02}:{minute:02}:{second:02}"
+
+
+class MyThread(Thread):
+	def __init__(self, func, *args):
+		super().__init__()
+
+		self.func = func
+		self.args = args
+
+		self.setDaemon(True)
+		self.start()
+
+	def run(self):
+		self.func(*self.args)
 
 
 if __name__ == "__main__":
