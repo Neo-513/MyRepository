@@ -23,12 +23,12 @@ class Recorder:
 	BUFFER = 1024  # 缓冲区帧数
 
 	def __init__(self):
-		self.gui = GUI(self.func_record)
+		self.gui = GUI((self.record, ))
 		self.video = None
 		# self.video, self.audio, self.stream, self.pa = None, None, None, None  # 视频音频相关资源
 		# self.datas = None
 
-	def func_record(self):  # 录制
+	def record(self):  # 录制
 		if not self.gui.flag_record:
 			self.gui.flag_record = 1  # 激活运行标志
 
@@ -41,12 +41,12 @@ class Recorder:
 			)
 			print(time.time() - a, a - s)
 			self.video, self.audio = self.get_resource(filepath)'''
-			self.count_down(filepath)  # 倒计时
+			self._countdown(filepath)  # 倒计时
 
 			timer = time.time()  # 计时器
 			count = 0  # 计数器
 			while self.gui.flag_record:
-				img = self.shot()
+				img = self._shot()
 				self.video.write(img)  # 将屏幕快照添加至视频中
 
 				if count % self.gui.fps == 0:  # 每隔固定帧数刷新信息
@@ -57,11 +57,11 @@ class Recorder:
 					self.gui.var_real_time.set(self.gui.sec2msg(current_time))
 				count += 1
 				if count >= self.gui.fps * self.gui.duration * 60:
-					self.terminate()
+					self._terminate()
 		else:
-			self.terminate()
+			self._terminate()
 
-	def terminate(self):  # 录制终结
+	def _terminate(self):  # 录制终结
 		self.gui.flag_record = 0  # 重置运行标志
 		self.gui.var_record.set("●")
 		self.gui.label_state.config(fg="blue")
@@ -73,7 +73,7 @@ class Recorder:
 		self.pa.terminate()  # 终结对象
 		'''
 
-	def count_down(self, filepath):  # 倒计时
+	def _countdown(self, filepath):  # 倒计时
 		self.gui.var_record_time.set(self.gui.sec2msg())
 		self.gui.var_current_fps.set("0.00 fps")
 		self.gui.var_real_time.set(self.gui.sec2msg())
@@ -90,7 +90,7 @@ class Recorder:
 		self.gui.label_state.config(textvariable=self.gui.var_record_time, fg="black")  # 录屏计时
 
 	@staticmethod
-	def shot():  # 抓取屏幕
+	def _shot():  # 抓取屏幕
 		rgb = ImageGrab.grab()  # 抓取屏幕快照
 		bgr = cv2.cvtColor(np.asarray(rgb), cv2.COLOR_RGB2BGR)  # rgb格式转换为opencv的bgr格式
 		return bgr
@@ -117,7 +117,7 @@ class GUI:
 	VERSION = "v1.4"
 
 	def __init__(self, func_record):
-		self.func_record = func_record  # 录制函数
+		self.func_record, = func_record  # 录制函数
 		self.root = tk.Tk()  # 主窗口
 		self.flag_record, self.flag_setup = 0, 0  # 运行标志、设置窗口标志
 
