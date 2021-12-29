@@ -215,5 +215,5 @@ class GUI:
 
 
 if __name__ == "__main__":
-	vr = VideoRecorder()
-	vr.run()
+	video_recorder = VideoRecorder()
+	video_recorder.run()
