@@ -3,36 +3,24 @@ from tkinter.filedialog import askdirectory
 import cv2
 import numpy as np
 import os
-import pyaudio
 import time
 import tkinter as tk
 
 
-class Recorder:
-	"""录屏工具类"""
-
-	'''视频默认参数'''
+class VideoRecorder:
 	FOURCC = cv2.VideoWriter_fourcc(*"mp4v")  # mp4编码器
 	FPS = 15  # 帧率（通过计算近似所得）
 	FRAME_SIZE = ImageGrab.grab().size  # 屏幕尺寸
 
-	'''音频默认参数'''
-	CHANNELS = 1  # 单声道
-	FORMAT = pyaudio.paInt16  # 采样位数
-	RATE = 44100  # 采样频率
-	BUFFER = 1024  # 缓冲区帧数
-
-	'''录制默认参数'''
-	FOLDER = "D:/1"  # 保存目录  "C:/Users/Dell/Desktop"
-	DELAY = 0  # 准备时长  3
-	DURATION = 60  # 录制时长
+	FOLDER = "C:/Users/Dell/Desktop"  # 默认保存目录
+	DELAY = 3  # 默认准备时长
+	DURATION = 60  # 默认录制时长
 
 	def __init__(self):
-		self.gui = GUI((self.record, ), (self.FOLDER, self.FPS, self.DELAY, self.DURATION))
-		self.video = None
+		self.gui = GUI((self.record,), (self.FOLDER, self.FPS, self.DELAY, self.DURATION))
 		self.timer = 0  # 计时器
 		self.count = 0  # 计数器
-		self.after_id = None  # 计时id
+		self.video = None  # 视频
 
 	def core(self):  # 核心函数
 		if self.gui.flag_record == 1 and self.count <= self.gui.fps * self.gui.duration * 60:
@@ -43,7 +31,7 @@ class Recorder:
 				self.gui.var_current_fps.set(f"{(self.count / current_time):.2f} fps")
 				self.gui.var_real_time.set(self.sec2fmt(current_time))
 			self.count += 1
-			self.after_id = self.gui.root.after(1, self.core)
+			self.gui.root.after(1, self.core)
 		else:
 			self.video.release()  # 释放视频资源
 			self.gui.button_record.config(text="●")
@@ -59,14 +47,13 @@ class Recorder:
 		elif self.gui.flag_record == 0:
 			self.gui.flag_record = 1  # 激活运行标志
 
-			file_path = f"{self.gui.folder.rstrip('/')}/{time.strftime('%Y%m%d%H%M%S', time.localtime())}"  # 文件路径
-			self.video = cv2.VideoWriter(
-				f"{file_path}.mp4", fourcc=self.FOURCC, fps=self.FPS, frameSize=self.FRAME_SIZE)
-			
+			file_path = f"{self.gui.folder.rstrip('/')}/录屏{time.strftime('%Y%m%d%H%M%S', time.localtime())}.mp4"
+			self.video = cv2.VideoWriter(file_path, fourcc=self.FOURCC, fps=self.FPS, frameSize=self.FRAME_SIZE)
+
 			self.gui.var_record_time.set(self.sec2fmt())
 			self.gui.var_current_fps.set("0.00 fps")
 			self.gui.var_real_time.set(self.sec2fmt())
-			self.gui.var_file_name.set(file_path.split("/")[-1])
+			self.gui.var_file_name.set(file_path.split("/")[-1][:-4])
 			self.gui.button_record.config(state="normal", text="■")  # 启用按钮
 			self.gui.label_state.config(textvariable=self.gui.var_record_time, fg="black")
 
@@ -97,7 +84,6 @@ class Recorder:
 
 
 class GUI:
-	"""窗口类"""
 	def __init__(self, funcs, defaults):
 		self.record, = funcs  # 录制函数
 		self.folder, self.fps, self.delay, self.duration = defaults  # 默认参数
@@ -229,5 +215,5 @@ class GUI:
 
 
 if __name__ == "__main__":
-	recorder = Recorder()
-	recorder.run()
+	vr = VideoRecorder()
+	vr.run()
