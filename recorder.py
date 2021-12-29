@@ -24,7 +24,7 @@ class Recorder:
 
 	'''录制默认参数'''
 	FOLDER = "D:/1"  # 保存目录  "C:/Users/Dell/Desktop"
-	DELAY = 3  # 准备时长  3
+	DELAY = 0  # 准备时长  3
 	DURATION = 60  # 录制时长
 
 	def __init__(self):
@@ -32,6 +32,7 @@ class Recorder:
 		self.video = None
 		self.timer = 0  # 计时器
 		self.count = 0  # 计数器
+		self.after_id = None  # 计时id
 
 	def core(self):  # 核心函数
 		if self.gui.flag_record == 1 and self.count <= self.gui.fps * self.gui.duration * 60:
@@ -42,7 +43,7 @@ class Recorder:
 				self.gui.var_current_fps.set(f"{(self.count / current_time):.2f} fps")
 				self.gui.var_real_time.set(self.sec2fmt(current_time))
 			self.count += 1
-			self.gui.root.after(1, self.core)
+			self.after_id = self.gui.root.after(1, self.core)
 		else:
 			self.video.release()  # 释放视频资源
 			self.gui.button_record.config(text="●")
