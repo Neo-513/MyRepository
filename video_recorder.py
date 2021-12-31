@@ -25,7 +25,7 @@ class VideoRecorder:
 	def core(self):  # 核心函数
 		if self.gui.flag_record == 1 and self.count <= self.gui.fps * self.gui.duration * 60:
 			self.shot()
-			if self.count % self.gui.fps == 0:  # 每隔固定帧数刷新信息
+			if not self.count % self.gui.fps:  # 每隔固定帧数刷新信息
 				current_time = time.time() - self.timer  # 当前所计时间
 				self.gui.var_record_time.set(self.sec2fmt(self.count / self.gui.fps))
 				self.gui.var_current_fps.set(f"{(self.count / current_time):.2f} fps")
@@ -38,13 +38,7 @@ class VideoRecorder:
 			self.gui.label_state.config(fg="blue")
 
 	def record(self):  # 录制
-		if self.gui.flag_record < 0:
-			self.gui.label_state.config(textvariable=self.gui.var_countdown, fg="red")
-			self.gui.button_record.config(state="disabled", text="■")  # 禁用按钮
-			self.gui.var_countdown.set(self.sec2fmt(-self.gui.flag_record))
-			self.gui.flag_record += 1
-			self.gui.root.after(1000, self.record)
-		elif self.gui.flag_record == 0:
+		if not self.gui.flag_record:
 			self.gui.flag_record = 1  # 激活运行标志
 
 			file_path = f"{self.gui.folder.rstrip('/')}/录屏{time.strftime('%Y%m%d%H%M%S', time.localtime())}.mp4"
@@ -60,6 +54,12 @@ class VideoRecorder:
 			self.timer = time.time()  # 计时器
 			self.count = 0  # 计数器
 			self.gui.root.after(1, func=self.core)  # 核心函数
+		elif self.gui.flag_record < 0:
+			self.gui.label_state.config(textvariable=self.gui.var_countdown, fg="red")
+			self.gui.button_record.config(state="disabled", text="■")  # 禁用按钮
+			self.gui.var_countdown.set(self.sec2fmt(-self.gui.flag_record))
+			self.gui.flag_record += 1
+			self.gui.root.after(1000, self.record)
 		else:
 			self.gui.flag_record = -self.gui.delay  # 重置运行标志
 
@@ -70,12 +70,12 @@ class VideoRecorder:
 
 	@staticmethod
 	def sec2fmt(sec=0):  # 格式化秒数
-		if sec == 0:
-			return "00:00:00"
-		hour = int(sec / 3600)
-		minute = int((sec % 3600) / 60)
-		second = int(sec % 60)
-		return f"{hour:02}:{minute:02}:{second:02}"
+		if sec:
+			hour = int(sec / 3600)
+			minute = int((sec % 3600) / 60)
+			second = int(sec % 60)
+			return f"{hour:02}:{minute:02}:{second:02}"
+		return "00:00:00"
 
 	def run(self):  # 运行
 		self.gui.init_root()
