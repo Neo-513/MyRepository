@@ -1,5 +1,5 @@
 from myutils.mycrawler import MyCrawler
-import myutils.myutility as mu
+from myutils import myutility as mu
 
 
 class BiliBili:
