@@ -70,7 +70,7 @@ class VideoRecorder:
 
 	@staticmethod
 	def sec2fmt(sec=0):  # 格式化秒数
-		if sec:
+		if round(sec):
 			hour = int(sec / 3600)
 			minute = int((sec % 3600) / 60)
 			second = int(sec % 60)
