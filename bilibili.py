@@ -1,10 +1,10 @@
-import mycrawler
-import myutility as mu
+from myutils.mycrawler import MyCrawler
+import myutils.myutility as mu
 
 
-class MyBiliBili:
+class BiliBili:
 	def __init__(self, cookie):
-		self.mc = mycrawler.MyCrawler(cookie=cookie)  # 爬虫
+		self.mc = MyCrawler(cookie=cookie)  # 爬虫
 
 	def get_favs(self, fid):  # 获取收藏夹信息（上限1500）
 		urls = [f"http://api.bilibili.com/x/v3/fav/resource/list?ps=20&media_id={fid}&pn={i + 1}" for i in range(75)]
