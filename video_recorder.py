@@ -22,7 +22,11 @@ class VideoRecorder:
 		self.count = 0  # 计数器
 		self.video = None  # 视频
 
-	def core(self):  # 核心函数
+	def core(self):
+		"""
+		核心函数，实现录制功能
+		:return:
+		"""
 		if self.gui.flag_record == 1 and self.count <= self.gui.fps * self.gui.duration * 60:
 			self.shot()
 			if not self.count % self.gui.fps:  # 每隔固定帧数刷新信息
@@ -37,7 +41,11 @@ class VideoRecorder:
 			self.gui.button_record.config(text="●")
 			self.gui.label_state.config(fg="blue")
 
-	def record(self):  # 录制
+	def record(self):
+		"""
+		录制函数，进行倒计时与开始、停止录制流程的控制
+		:return:
+		"""
 		if not self.gui.flag_record:
 			self.gui.flag_record = 1  # 激活运行标志
 
@@ -63,13 +71,22 @@ class VideoRecorder:
 		else:
 			self.gui.flag_record = -self.gui.delay  # 重置运行标志
 
-	def shot(self):  # 抓取屏幕
+	def shot(self):
+		"""
+		抓取屏幕函数
+		:return:
+		"""
 		rgb = ImageGrab.grab()  # 抓取屏幕快照
 		bgr = cv2.cvtColor(np.asarray(rgb), cv2.COLOR_RGB2BGR)  # rgb格式转换为opencv的bgr格式
 		self.video.write(bgr)  # 将屏幕快照添加至视频中
 
 	@staticmethod
-	def sec2fmt(sec=0):  # 格式化秒数
+	def sec2fmt(sec=0):
+		"""
+		格式化秒数
+		:param sec: 待格式化秒数（可选）
+		:return: 格式化后的时间字符串
+		"""
 		if round(sec):
 			hour = int(sec / 3600)
 			minute = int((sec % 3600) / 60)
@@ -77,7 +94,11 @@ class VideoRecorder:
 			return f"{hour:02}:{minute:02}:{second:02}"
 		return "00:00:00"
 
-	def run(self):  # 运行
+	def run(self):
+		"""
+		运行gui
+		:return:
+		"""
 		self.gui.init_root()
 		self.gui.init_state()
 		self.gui.root.mainloop()
@@ -108,7 +129,12 @@ class GUI:
 		self.var_duration = tk.StringVar()  # 录制时长
 		self.flag_setup = 0  # 设置窗口标志
 
-	def init_root(self):  # 初始化主窗口
+	def init_root(self):
+		"""
+		初始化主窗口
+		:return:
+		"""
+		'''主窗口'''
 		self.root.title(f"录屏工具")  # 设置标题
 		self.root.geometry("+1200+600")  # 设置位置
 		self.root.resizable(0, 0)  # 禁止拉伸
@@ -142,7 +168,12 @@ class GUI:
 		menu_bar.add_cascade(label="菜单", menu=menu_main)  # 添加至菜单栏
 		self.root["menu"] = menu_bar  # 添加至主窗口
 
-	def init_state(self):  # 初始化状态窗口
+	def init_state(self):
+		"""
+		初始化状态窗口
+		:return:
+		"""
+		'''状态窗口'''
 		state = tk.Toplevel()  # 状态窗口
 		state.overrideredirect(True)  # 隐藏标题栏
 		state.geometry("+750+0")  # 设置位置
@@ -156,12 +187,24 @@ class GUI:
 		self.label_state = tk.Label(state, textvariable=self.var_countdown)
 		self.label_state.grid(row=0, column=0)
 
-	def init_setup(self):  # 初始化设置窗口
-		def terminate():  # 终结
+	def init_setup(self):
+		"""
+		初始化设置窗口
+		:return:
+		"""
+		def terminate():
+			"""
+			关闭设置窗口事件
+			:return:
+			"""
 			self.flag_setup = 0  # 重置设置窗口标志
 			setup.destroy()
 
-		def submit():  # 确认
+		def submit():
+			"""
+			提交修改的设置
+			:return:
+			"""
 			if os.path.exists(self.var_folder.get()):
 				self.folder = self.var_folder.get()
 			if self.var_fps.get().isdigit() and 10 <= int(self.var_fps.get()) <= 25:
@@ -173,7 +216,11 @@ class GUI:
 				self.duration = int(self.var_duration.get())
 			terminate()
 
-		def select_folder():  # 选择保存目录
+		def select_folder():
+			"""
+			选择保存目录
+			:return:
+			"""
 			folder = askdirectory()
 			if folder:
 				self.var_folder.set(folder)
@@ -181,6 +228,7 @@ class GUI:
 		if not self.flag_setup and self.flag_record != 1:
 			self.flag_setup = 1  # 激活设置窗口标志
 
+			'''设置窗口'''
 			setup = tk.Toplevel()  # 设置窗口
 			setup.protocol("WM_DELETE_WINDOW", terminate)  # 绑定关闭事件
 			setup.title("设置")  # 设置标题
