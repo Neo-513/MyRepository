@@ -11,7 +11,11 @@ class NetSpeed:
 		self.sent_before, self.recv_before = 0, 0  # 当前上传下载速率
 		self.sent_before_avg, self.recv_before_avg = 0, 0  # 平均上传下载速率
 
-	def calculate(self):  # 测量当前网速
+	def calculate(self):
+		"""
+		计算当前网速
+		:return:
+		"""
 		sent_now = psutil.net_io_counters().bytes_sent  # 当前已上传流量
 		recv_now = psutil.net_io_counters().bytes_recv  # 当前已下载流量
 
@@ -30,7 +34,11 @@ class NetSpeed:
 		self.recv_before = recv_now
 		self.gui.root.after(1000, self.calculate)
 
-	def average(self):  # 测量平均网速
+	def average(self):
+		"""
+		测量某段时间内的平均网速
+		:return:
+		"""
 		if self.flag:
 			self.flag = 0
 
@@ -55,7 +63,12 @@ class NetSpeed:
 			self.recv_before_avg = psutil.net_io_counters().bytes_recv  # 统计前已下载流量
 
 	@staticmethod
-	def sec2fmt(sec=0):  # 格式化秒数
+	def sec2fmt(sec=0):
+		"""
+		格式化秒数
+		:param sec: 待格式化秒数（可选）
+		:return: 格式化后的时间字符串
+		"""
 		if round(sec):
 			hour = int(sec / 3600)
 			minute = int((sec % 3600) / 60)
@@ -63,7 +76,11 @@ class NetSpeed:
 			return f"{hour:02}:{minute:02}:{second:02}"
 		return "00:00:00"
 
-	def run(self):  # 运行
+	def run(self):
+		"""
+		运行gui
+		:return:
+		"""
 		self.gui.init_root()
 		self.calculate()
 		self.gui.root.mainloop()
@@ -83,7 +100,12 @@ class GUI:
 		self.var_recv_avg = tk.StringVar()  # 平均下载速率
 		self.button_calculate = None
 
-	def init_root(self):  # 初始化主窗口
+	def init_root(self):
+		"""
+		初始化主窗口
+		:return:
+		"""
+		'''主窗口'''
 		self.root.title("网速测量工具")  # 设置标题
 		self.root.geometry("+1200+550")  # 设置位置
 		self.root.resizable(0, 0)  # 禁止拉伸
