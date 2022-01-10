@@ -17,7 +17,14 @@ class MyCrawler:
 		self.HEADERS["cookie"] = cookie
 		self.encoding = encoding
 
-	def crawl(self, urls, rgx=None, folder=""):  # 异步爬取队列
+	def crawl(self, urls, rgx=None, folder=""):
+		"""
+		爬取url列表
+		:param urls: url列表
+		:param rgx: 正则表达式（可选）
+		:param folder: 保存图片目录（可选）
+		:return: 按url列表顺序的网页数据
+		"""
 		params = (
 			{"count": -1},  # 计数器
 			math.ceil(math.log(len(urls), 10)),  # 计数器补0位数
@@ -35,7 +42,7 @@ class MyCrawler:
 		if not folder:
 			return [params[5][url] for url in urls if url in params[5]]  # 按序返回数据
 
-	async def _main(self, urls, params):  # 任务列表
+	async def _main(self, urls, params):  # 任务列表（外部不可调用）
 		timer = time.time()  # 计时器
 		connector = aiohttp.TCPConnector(ssl=False)  # 取消ssl验证
 		async with aiohttp.ClientSession(headers=self.HEADERS, connector=connector) as session:
@@ -43,7 +50,7 @@ class MyCrawler:
 		print(f"TIMER: {time.time() - timer}")  # 计时
 
 	@staticmethod
-	async def _fetch(url, session, params):  # 异步爬取单个
+	async def _fetch(url, session, params):  # 爬取单个（外部不可调用）
 		async with session.get(url) as response:
 			params[0]["count"] += 1  # 计数
 			msg = f"[{params[0]['count']:0{params[1]}}]  {params[2]}  {url}"  # url信息
