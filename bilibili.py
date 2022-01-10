@@ -4,10 +4,6 @@ import myutils as mu
 
 class BiliBili:
 	def __init__(self, cookie):
-		"""
-		构造方法
-		:param cookie: 登录后的cookie
-		"""
 		self.mc = mycrawler.MyCrawler(cookie=cookie)  # 爬虫
 
 	def get_favs(self, fid):
