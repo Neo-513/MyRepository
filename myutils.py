@@ -1,53 +1,42 @@
 import collections
-import csv
-import demjson
 import jieba
 import json
 import time
 
 
-def read(path):
+def myprint(items):
 	"""
-	读文件
-	:param path: 文件路径
-	:return: 文件内容
-	"""
-	print(f"READ: {path}")
-	file_type = path.split(".")[-1]  # 文件类型
-	encoding = "gbk" if file_type == "csv" else "utf-8"  # 编码
-
-	with open(path, mode="r", encoding=encoding) as f:
-		if file_type == "txt":
-			datas = f.read().split("\n")
-		elif file_type == "csv":
-			datas = [[r for r in reader] for reader in csv.reader(f)]
-			if len(datas[0]) == 1:  # 一维列表
-				datas = [data[0] for data in datas]
-		elif file_type == "json":
-			datas = demjson.decode(f.read())
-	return datas
-
-
-def write(path, datas):
-	"""
-	写文件
-	:param path: 文件路径
-	:param datas: 文件内容
+	迭代打印
+	:param items: 待打印集合
 	:return:
 	"""
-	print(f"WRITE: {path}")
-	file_type = path.split(".")[-1]  # 文件类型
-	encoding = "gbk" if file_type == "csv" else "utf-8"  # 编码
+	if isinstance(items, dict):
+		max_len = max(map(lambda x: len(str(x)), items))  # 列表元素最大长度
+		for k, v in items.items():
+			print(f"{k:<{max_len + 4}}{v}")
+	else:
+		for item in items:
+			print(item)
 
-	with open(path, mode="w", encoding=encoding, newline="") as f:
-		if file_type == "txt":
-			f.write(datas)
-		elif file_type == "csv":
-			if not isinstance(datas[0], list):  # 一维列表
-				datas = [[data] for data in datas]
-			csv.writer(f).writerows(datas)
-		elif file_type == "json":
-			f.write(demjson.encode(datas))
+
+def timing(func):
+	"""
+	统计函数执行时间（装饰器）
+	:param func: 待执行函数
+	:return: 回调函数
+	"""
+	def callback(*args, **kwargs):
+		"""
+		回调函数
+		:param args: 传递参数
+		:param kwargs: 传递参数
+		:return: 回调函数返回值
+		"""
+		timer = time.time()  # 计时器
+		datas = func(*args, **kwargs)  # 执行函数
+		print(f"TIMING: {time.time() - timer}")
+		return datas
+	return callback
 
 
 def mysort(items, idx=0, reverse=True):
@@ -96,41 +85,6 @@ def beautify_dic(dic):
 	if isinstance(dic, str):
 		dic = str2dic(dic)
 	print(json.dumps(dic, indent=4, ensure_ascii=False))
-
-
-def myprint(items):
-	"""
-	迭代打印
-	:param items: 待打印集合
-	:return:
-	"""
-	if isinstance(items, dict):
-		max_len = max(map(lambda x: len(str(x)), items))  # 列表元素最大长度
-		for k, v in items.items():
-			print(f"{k:<{max_len + 4}}{v}")
-	else:
-		for item in items:
-			print(item)
-
-
-def timing(func):
-	"""
-	统计函数执行时间（装饰器）
-	:param func: 待执行函数
-	:return: 回调函数
-	"""
-	def callback(*args, **kwargs):
-		"""
-		回调函数
-		:param args: 传递参数
-		:param kwargs: 传递参数
-		:return: 回调函数返回值
-		"""
-		timer = time.time()  # 计时器
-		datas = func(*args, **kwargs)  # 执行函数
-		print(f"TIMING: {time.time() - timer}")
-		return datas
-	return callback
 
 
 def analyze_nlp(kws):
