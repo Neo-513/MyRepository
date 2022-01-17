@@ -44,8 +44,10 @@ async def _main(encoding, trace, paths, datas=None):  # 执行队列（外部不
 		{},  # 内容字典
 		trace  # 打印信息
 	)
-	func = _write if datas else _read
-	tasks = [(path, datas[i]) if datas else paths[i] for i, path in enumerate(paths)]
+	if datas:
+		func, tasks = _write, [(path, datas[i]) for i, path in enumerate(paths)]
+	else:
+		func, tasks = _read, paths
 	await asyncio.gather(*[asyncio.ensure_future(func(task, params)) for task in tasks])
 
 	if not datas:
