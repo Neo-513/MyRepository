@@ -2,24 +2,21 @@ import threading
 import time
 
 
-def timing():
-	"""
-	统计函数执行时间
+def timing(func):
+	"""统计函数执行时间
+	:param func: 待执行函数
 	:return: 装饰器函数
 	"""
-	def decorator(func):  # 装饰器函数
-		def inner(*args):  # 内部函数
-			timer = time.time()  # 计时器
-			datas = func(*args)  # 执行函数
-			print(f"TIMING: {time.time() - timer}")
-			return datas
-		return inner
-	return decorator
+	def inner(*args):  # 内部函数
+		timer = time.time()  # 计时器
+		datas = func(*args)  # 执行函数
+		print(f"[TIMING]    {time.time() - timer}")
+		return datas
+	return inner
 
 
 def loading(timeout):
-	"""
-	多线程打印加载进度条（该函数之后不应再执行其他命令且函数内部不含打印命令）
+	"""多线程打印加载进度条（该函数之后不应再执行其他命令且函数内部不含打印命令）
 	:param timeout: 预计执行时间
 	:return: 装饰器函数
 	"""
@@ -37,6 +34,7 @@ def loading(timeout):
 			current_time = f"[{sec2str(int(i / freq))}]"  # 已执行时间
 			process_bar = f"{'■' * block}{'□' * (50 - block)}"  # 进度条
 			percentage = f"{rate * 100:>6.2f}%"  # 百分比
+
 			print(f"\r{current_time} {process_bar} {percentage}", end="")
 			time.sleep(1 / freq)
 
