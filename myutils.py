@@ -30,21 +30,6 @@ def mysort(items, idx, reverse=True):
 		return dict(sorted(items.items(), key=lambda x: x[idx], reverse=reverse))
 
 
-def replace_all(string, rplcs):
-	"""替换字符串的关键字
-	:param string: 待替换字符串
-	:param rplcs: 替换关键字字典（若传入一个列表则默认替换为""）
-	:return: 替换后的字符串
-	"""
-	if isinstance(rplcs, list):
-		dic = {rplc: "" for rplc in rplcs}
-	else:
-		dic = rplcs
-	for d in dic:
-		string = string.replace(d, dic[d])
-	return string
-
-
 def lst2dic(lst):
 	"""统计列表元素个数
 	:param lst: 待统计元素的列表
@@ -60,7 +45,8 @@ def jsn2dic(jsn):
 	:return: 转换后的json字典
 	"""
 	dic = {"null": "None", "true": "True", "false": "False"}
-	jsn = replace_all(jsn, dic)  # 去除特殊字符影响
+	for d in dic:
+		jsn = jsn.replace(d, dic[d])
 	return eval(jsn)
 
 
