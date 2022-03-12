@@ -1,41 +1,47 @@
 import math
-import mycrawler
+import mycrawler as mc
 import myutils as mu
 
 
 class BiliBili:
-	def __init__(self, uid, cookie):
-		self.mc = mycrawler.MyCrawler(cookie=cookie)  # 爬虫
-		self.url_fav = "http://api.bilibili.com/x/v3/fav/resource/list?ps=20"  # 收藏夹url
-		self.url_up = f"http://api.bilibili.com/x/relation/followings?vmid={uid}&order=desc"  # 关注up url
+	def __init__(self, mid, cookie):
+		self.mid = mid  # 用户uid
+		self.cookie = cookie  # cookie
 
 	def get_favs(self, fid):
 		"""爬取收藏夹内容
 		:param fid: 收藏夹id
 		:return: 元素为视频标题、up id、up网名的列表
 		"""
-		urls = [f"{self.url_fav}&media_id={fid}&pn={i + 1}" for i in range(self._count_fav(fid))]
-		datas = self.mc.crawl(urls)
-		return [[d["title"], d["upper"]["mid"], d["upper"]["name"]] for data in datas for d in mu.jsn2dic(data)[
-			"data"]["medias"]]
+		url_fav = f"https://api.bilibili.com/x/v3/fav/resource/list?ps=20&media_id={fid}"
+
+		urls = [f"{url_fav}&pn=1"]
+		datas = mc.crawl(urls, cookie=self.cookie)
+		page = math.ceil(mu.jsn2dic(datas[0])["data"]["info"]["media_count"] / 20)  # 每页20
+
+		urls = [f"{url_fav}&pn={i + 1}" for i in range(page)]
+		datas = mc.crawl(urls, cookie=self.cookie)
+		return [[d["title"], d["upper"]["mid"], d["upper"]["name"]] for data in datas for d in mu.jsn2dic(
+			data)["data"]["medias"]]
 
 	def get_ups(self):
 		"""爬取关注up信息
 		:return: 键名为up id、键值为up网名的字典
 		"""
-		urls = [f"{self.url_up}&pn={i + 1}" for i in range(
-			self._count_up())]
-		datas = self.mc.crawl(urls)
+		url_up = f"https://api.bilibili.com/x/relation/followings?vmid={self.mid}&order=desc"
+
+		urls = [f"{url_up}&pn=1"]
+		datas = mc.crawl(urls, cookie=self.cookie)
+		page = math.ceil(mu.jsn2dic(datas[0])["data"]["total"] / 50)  # 每页50
+
+		urls = [f"{url_up}&pn={i + 1}" for i in range(page)]
+		datas = mc.crawl(urls, cookie=self.cookie)
 		return {d["mid"]: d["uname"] for data in datas for d in mu.jsn2dic(data)["data"]["list"]}
 
-	def _count_fav(self, fid):  # 计算收藏夹内容个数（外部不可调用）
-		url = f"{self.url_fav}&media_id={fid}&pn=1"
-		data = self.mc.crawl(url)
-		count = mu.jsn2dic(data)["data"]["info"]["media_count"]
-		return math.ceil(count / 20)  # 每页20
-
-	def _count_up(self):  # 计算关注up个数（外部不可调用）
-		url = f"{self.url_up}&pn=1"
-		data = self.mc.crawl(url)
-		count = mu.jsn2dic(data)["data"]["total"]
-		return math.ceil(count / 50)  # 每页50
+	def get_folders(self):
+		"""爬取收藏夹信息
+		:return: 元素为收藏夹id、收藏夹标题、收藏视频个数的字典
+		"""
+		urls = [f"https://api.bilibili.com/x/v3/fav/folder/created/list-all?up_mid={self.mid}"]
+		datas = mc.crawl(urls, cookie=self.cookie)
+		return [[d["id"], d["title"], d["media_count"]] for d in mu.jsn2dic(datas[0])["data"]["list"]]
