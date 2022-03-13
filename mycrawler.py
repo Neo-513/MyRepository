@@ -70,4 +70,4 @@ async def _fetch(url, params):  # 爬取单个url
 				await file.write(data)  # 写入图片文件
 		else:  # 爬取文本
 			data = await response.text(encoding=encoding)  # 获取文本内容
-			params["dic"][url] = cmpl.findall(data) if cmpl else data  # 加入url字典
+			params["dic"][url] = cmpl.findall(data) if cmpl else data  # 加入url字典1
