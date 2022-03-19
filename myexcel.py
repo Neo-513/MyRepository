@@ -29,10 +29,11 @@ def write(path, dic):
 	for sheetname in dic:  # 遍历表名
 		sheet = file.create_sheet(sheetname)  # 创建表
 		datas = dic[sheetname]  # 单张表数据集合
-		for data in datas:  # 遍历行
-			for d in data:  # 遍历单元格
-				irow, icol = datas.index(data) + 1, data.index(d) + 1  # 行索引、列索引（起始索引为1）
-				sheet.cell(irow, icol).value = d  # 写入单元格数据
+		row = len(datas)  # 行数
+		col = len(datas[0])  # 列数
+		for r in range(row):  # 遍历行
+			for c in range(col):  # 遍历单元格
+				sheet.cell(r + 1, c + 1).value = datas[r][c]  # 写入单元格数据（起始索引为1）
 
 	file.save(path)  # 保存文件
 	file.close()  # 关闭文件对象
