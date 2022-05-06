@@ -3,18 +3,24 @@ import jieba
 import json
 
 
-def myprint(items):
+def myprint(items, tab=False):
 	"""迭代打印
 	:param items: 待打印集合
+	:param tab: 是否使用tab进行连接
 	"""
-	if isinstance(items, dict):
-		if items:  # 判断是否为空
-			max_len = max(map(lambda x: len(str(x)), items))  # 列表元素最大长度
-			for k, v in items.items():
-				print(f"{k:<{max_len + 4}}{v}")
-	else:
-		for item in items:
-			print(item)
+	if items:  # 判断是否为空
+		if isinstance(items, dict):
+			if tab:
+				for k, v in items.items():
+					print(f"{k}\t{v}")
+			else:
+				max_len = max(map(lambda x: len(str(x)), items))  # 列表元素最大长度
+				for k, v in items.items():
+					print(f"{k:<{max_len + 4}}{v}")
+		else:
+			for item in items:
+				print(item)
+		print(f"[COUNT]    {len(items)}")
 
 
 def mysort(items, idx, reverse=True):
@@ -55,6 +61,14 @@ def beautify_dic(dic):
 	:param dic: 待格式化打印字典
 	"""
 	print(json.dumps(dic, indent=4, ensure_ascii=False))
+
+
+def default_dic(item_type):
+	"""获取含有默认数据类型的字典
+	:param item_type: 默认数据类型
+	:return: 含有默认数据类型的字典
+	"""
+	return collections.defaultdict(item_type)
 
 
 def analyze_nlp(kws):
