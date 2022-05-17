@@ -7,8 +7,8 @@ import re
 import time
 
 HEADERS = {
-	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0."
-	"4844.51 Safari/537.36"
+	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.495"
+	"1.64 Safari/537.36"
 }  # 请求头
 
 
@@ -21,8 +21,6 @@ def crawl(urls, cookie="", rgx=None, folder="", encoding="utf-8"):
 	:param encoding: 编码
 	:return: 按url列表顺序的网页数据
 	"""
-	if (not folder and len(urls) > 12000) or (folder and len(urls) > 1000):  # 判断是否异步过载
-		return print("[OVERLOAD]")
 	if cookie:
 		HEADERS["cookie"] = cookie
 	if folder and not os.path.exists(folder):
