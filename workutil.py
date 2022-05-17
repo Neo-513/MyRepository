@@ -1,10 +1,13 @@
 import base64
+import hashlib
 import tkinter as tk
 
 
 class WorkUtil:
 	def __init__(self):
-		funcs = (self.quote, self.unquote, self.upper, self.encode, self.decode, self.clear)
+		funcs = (
+			self.quote, self.unquote, self.upper, self.lower, self.encode_base64, self.decode_base64,
+			self.encode_sha256, self.clear)
 		self.gui = GUI(funcs)
 
 	def quote(self):  # 加引号
@@ -27,15 +30,29 @@ class WorkUtil:
 		self.gui.text_output.delete(1.0, tk.END)
 		self.gui.text_output.insert(1.0, text_output)
 
-	def encode(self):  # base64加密
+	def lower(self):  # 小写
+		text_input = self.gui.text_input.get(1.0, tk.END)[:-1]
+		text_output = text_input.rstrip().lower()
+		self.gui.text_output.delete(1.0, tk.END)
+		self.gui.text_output.insert(1.0, text_output)
+
+	def encode_base64(self):  # base64加密
 		text_input = self.gui.text_input.get(1.0, tk.END)[:-1]
 		text_output = base64.b64encode(bytes(text_input.strip(), "utf-8"))
 		self.gui.text_output.delete(1.0, tk.END)
 		self.gui.text_output.insert(1.0, text_output)
 
-	def decode(self):  # base64解密
+	def decode_base64(self):  # base64解密
 		text_input = self.gui.text_input.get(1.0, tk.END)[:-1]
 		text_output = str(base64.b64decode(text_input.strip()))[2:-1]
+		self.gui.text_output.delete(1.0, tk.END)
+		self.gui.text_output.insert(1.0, text_output)
+
+	def encode_sha256(self):  # sha256加密
+		text_input = self.gui.text_input.get(1.0, tk.END)[:-1]
+		sha256 = hashlib.sha256()
+		sha256.update(text_input.encode("utf-8"))
+		text_output = sha256.hexdigest()
 		self.gui.text_output.delete(1.0, tk.END)
 		self.gui.text_output.insert(1.0, text_output)
 
@@ -65,9 +82,11 @@ class GUI:
 		tk.Button(self.root, text="加引号", command=self.funcs[0], bg="skyblue", width=10).grid(row=1, column=10)
 		tk.Button(self.root, text="去引号", command=self.funcs[1], bg="skyblue", width=10).grid(row=2, column=10)
 		tk.Button(self.root, text="大写", command=self.funcs[2], bg="skyblue", width=10).grid(row=3, column=10)
-		tk.Button(self.root, text="base64加密", command=self.funcs[3], bg="skyblue", width=10).grid(row=4, column=10)
-		tk.Button(self.root, text="base64解密", command=self.funcs[4], bg="skyblue", width=10).grid(row=5, column=10)
-		tk.Button(self.root, text="清空", command=self.funcs[5], bg="skyblue", width=10).grid(row=6, column=10)
+		tk.Button(self.root, text="小写", command=self.funcs[3], bg="skyblue", width=10).grid(row=4, column=10)
+		tk.Button(self.root, text="base64加密", command=self.funcs[4], bg="skyblue", width=10).grid(row=5, column=10)
+		tk.Button(self.root, text="base64解密", command=self.funcs[5], bg="skyblue", width=10).grid(row=6, column=10)
+		tk.Button(self.root, text="sha256加密", command=self.funcs[6], bg="skyblue", width=10).grid(row=7, column=10)
+		tk.Button(self.root, text="清空", command=self.funcs[7], bg="skyblue", width=10).grid(row=8, column=10)
 
 		'''标签'''
 		tk.Label(self.root, text="输入").grid(row=0, column=0)
@@ -75,9 +94,9 @@ class GUI:
 
 		'''文本框'''
 		self.text_input = tk.Text(self.root, width=50)
-		self.text_input.grid(row=1, column=0, rowspan=7, columnspan=10)
+		self.text_input.grid(row=1, column=0, rowspan=10, columnspan=10)
 		self.text_output = tk.Text(self.root, width=50)
-		self.text_output.grid(row=1, column=11, rowspan=7, columnspan=10)
+		self.text_output.grid(row=1, column=11, rowspan=10, columnspan=10)
 
 
 if __name__ == "__main__":
