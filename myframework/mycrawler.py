@@ -7,8 +7,8 @@ import re
 import time
 
 HEADERS = {
-	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.495"
-	"1.64 Safari/537.36"
+	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.500"
+	"5.63 Safari/537.36"
 }  # 请求头
 
 
@@ -37,13 +37,7 @@ def crawl(urls, cookie="", rgx=None, folder="", encoding="utf-8"):
 	asyncio.run(_main(urls, params))  # 异步执行爬取任务列表
 
 	if not folder:
-		if params["cmpl"]:  # 含正则搜索
-			datas = []
-			for url in urls:
-				datas.extend(params["dic"][url])  # 返回单个数据列表
-			return datas
-		else:  # 不含正则搜索
-			return [params["dic"][url] for url in urls if url in params["dic"]]  # 按序返回数据
+		return [params["dic"][url] for url in urls if url in params["dic"]]  # 按序返回数据
 
 
 async def _main(urls, params):  # 任务列表
