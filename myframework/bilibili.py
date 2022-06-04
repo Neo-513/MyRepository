@@ -1,6 +1,5 @@
 import math
-import mycrawler as mc
-import myutils as mu
+from myframework import mycrawler as mc, myutils as mu
 
 
 class BiliBili:
@@ -21,7 +20,7 @@ class BiliBili:
 
 		urls = [f"{url_fav}&pn={i + 1}" for i in range(page)]
 		datas = mc.crawl(urls, cookie=self.cookie)
-		return [[d["title"], d["upper"]["mid"], d["upper"]["name"]] for data in datas for d in mu.jsn2dic(
+		return [[d["title"], d["upper"]["mid"], d["upper"]["name"], d["bvid"]] for data in datas for d in mu.jsn2dic(
 			data)["data"]["medias"]]
 
 	def get_ups(self):
