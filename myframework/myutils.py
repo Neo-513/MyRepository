@@ -3,9 +3,10 @@ import jieba
 import json
 
 
-def myprint(items, tab=False):
+def myprint(items, trace=True, tab=False):
 	"""迭代打印
 	:param items: 待打印集合
+	:param trace: 是否打印信息
 	:param tab: 是否使用tab进行连接
 	"""
 	if items:  # 判断是否为空
@@ -20,7 +21,8 @@ def myprint(items, tab=False):
 		else:
 			for item in items:
 				print(item)
-		print(f"[COUNT]    {len(items)}")
+		if trace:
+			print(f"[COUNT]    {len(items)}")
 
 
 def mysort(items, idx, reverse=True):
