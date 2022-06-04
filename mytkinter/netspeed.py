@@ -24,7 +24,7 @@ class NetSpeed:
 	@staticmethod
 	def byte2str(byte):  # byte转为字符串
 		kb = byte / 1024
-		if byte > 1024:
+		if kb > 1024:
 			return f"{kb / 1024:>7.2f} MB/s"
 		return f"{kb:>7.2f} KB/s"
 
