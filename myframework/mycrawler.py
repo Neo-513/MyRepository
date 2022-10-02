@@ -14,7 +14,8 @@ HEADERS = {
 
 
 def get_cookie(url):
-	"""通过url获取当前cookie字符串
+	"""
+	通过url获取当前cookie字符串
 	:param url: url
 	:return: cookie字符串
 	"""
@@ -22,13 +23,14 @@ def get_cookie(url):
 
 
 def crawl(urls, cookie=None, rgx=None, folder="", encoding="utf-8", proxy=""):
-	"""url列表进行爬取网页数据或下载图片
+	"""
+	url列表进行爬取网页数据或下载图片
 	:param urls: url列表
 	:param cookie: 当前cookie对应的url
 	:param rgx: 正则表达式
 	:param folder: 保存图片目录
 	:param encoding: 编码
-	:param proxy: 本级代理
+	:param proxy: 本机代理
 	:return: 按url列表顺序的网页数据
 	"""
 	if cookie:
