@@ -32,7 +32,7 @@ def crawl(urls, cookie=None, rgx=None, folder="", encoding="utf-8", proxy=""):
 	:param encoding: 编码
 	:param proxy: 本机代理
 	:return: 按url列表顺序的网页数据
-	""" 
+	"""
 	if cookie:
 		HEADERS["cookie"] = cookie
 	if folder and not os.path.exists(folder):
