@@ -1,122 +1,128 @@
 import csv
+import json
 import openpyxl
-import re
+import pickle
 import xlrd
 import xlwt
 
 
-def read(path, encoding="gbk", trace=False):
-	"""读取文件
-	:param path: 文件路径
-	:param encoding: 文件编码
-	:param trace: 是否打印信息
-	:return: 文件内容集合
-	"""
-	filetype = path.split(".")[-1]  # 文件类型
-	if trace:
-		print(f"[READ]    {path}")  # 打印信息
-
-	if filetype == "csv":
-		return _read_csv(path, encoding)
-	elif filetype == "xlsx":
-		return _read_xlsx(path)
-	elif filetype == "xls":
-		return _read_xls(path)
-	else:
+class MyFileIO:  # 通用读写类
+	@staticmethod
+	def read(path):
 		with open(path, mode="r", encoding="utf-8") as file:
 			return file.read()
 
-
-def write(path, datas, encoding="gbk", trace=False):
-	"""写入文件
-	:param path: 文件路径
-	:param datas: 数据集合
-	:param encoding: 文件编码
-	:param trace: 是否打印信息
-	:return:
-	"""
-	filetype = path.split(".")[-1]  # 文件类型
-	if trace:
-		print(f"[WRITE]    {path}")  # 打印信息
-
-	if filetype == "csv":
-		_write_csv(path, datas, encoding=encoding)
-	elif filetype == "xlsx":
-		_write_xlsx(path, datas)
-	elif filetype == "xls":
-		_write_xls(path, datas)
-	else:
+	@staticmethod
+	def write(path, datas):
 		with open(path, mode="w", encoding="utf-8") as file:
 			file.write(datas)
 
 
-def _read_csv(path, encoding):  # 读csv
-	with open(path, mode="r", encoding=encoding) as file:
-		datas = [[r for r in reader] for reader in csv.reader(file)]
-		if len(datas) == 1:  # 一维列表
-			datas = datas[0]
-	return datas
+class MyCsv(MyFileIO):
+	@staticmethod
+	def read(path):
+		with open(path, mode="r", encoding="utf-8") as file:
+			return [[r for r in reader] for reader in csv.reader(file)]
+
+	@staticmethod
+	def write(path, datas):
+		with open(path, mode="w", encoding="utf-8", newline="") as file:
+			csv.writer(file).writerows(datas)
 
 
-def _write_csv(path, datas, encoding):  # 写csv
-	with open(path, mode="w", encoding=encoding, newline="") as file:
-		if not isinstance(datas[0], list):  # 一维列表
-			datas = [datas]
-		csv.writer(file).writerows(datas)
+class MyJson(MyFileIO):
+	@staticmethod
+	def read(path):
+		with open(path, mode="r") as file:
+			return json.load(file)
+
+	@staticmethod
+	def write(path, datas):
+		with open(path, mode="w") as file:
+			json.dump(datas, file)
 
 
-def _read_xlsx(path):  # 读xlsx
-	file = openpyxl.load_workbook(path)  # 文件对象
-	datas = {}  # 数据集合字典
+class MyPickle(MyFileIO):
+	@staticmethod
+	def read(path):
+		with open(path, mode="rb") as file:
+			return pickle.load(file)
 
-	for sheetname in file.sheetnames:  # 遍历表名
-		data = file[sheetname]  # 单张表数据集合
-		datas[sheetname] = [[cell.value if cell.value else "" for cell in row] for row in data.rows]
-
-	file.close()  # 关闭文件对象
-	return datas
-
-
-def _write_xlsx(path, datas):  # 写xlsx
-	file = openpyxl.Workbook()  # 文件对象
-	file.remove(file.active)  # 删除默认表
-
-	for sheetname in datas:  # 遍历表名
-		sheet = file.create_sheet(sheetname)  # 创建表
-		data = datas[sheetname]  # 单张表数据集合
-		row = len(data)  # 行数
-		col = 0 if row == 0 else len(data[0])  # 列数
-		for r in range(row):  # 遍历行
-			for c in range(col):  # 遍历单元格
-				sheet.cell(r + 1, c + 1).value = data[r][c]  # 写入单元格数据（起始索引为1）
-
-	file.save(path)  # 保存文件
-	file.close()  # 关闭文件对象
+	@staticmethod
+	def write(path, datas):
+		with open(path, mode="wb") as file:
+			pickle.dump(datas, file)
 
 
-def _read_xls(path):  # 读xls
-	file = xlrd.open_workbook(path)  # 文件对象
-	datas = {}  # 数据集合字典
+class MyXls(MyFileIO):
+	@staticmethod
+	def read(path):
+		workbook = xlrd.open_workbook(path)  # 获取工作簿
+		worksheet = workbook.sheet_by_index(0)  # 获取首个工作表
+		return [[d.value if d.value is not None else "" for d in data] for data in worksheet.get_rows()]
 
-	for sheetname in file.sheet_names():  # 遍历表名
-		data = file.sheet_by_name(sheetname)  # 单张表数据集合
-		datas[sheetname] = [[
-			int(cell.value) if re.findall("^\d+\.0*$", str(cell.value)) else cell.value for cell in row
-		] for row in data.get_rows()]
+	@staticmethod
+	def write(path, datas):
+		workbook = xlwt.Workbook()  # 创建工作簿
+		worksheet = workbook.add_sheet("Sheet")  # 创建工作表
 
-	return datas
+		for i, data in enumerate(datas):
+			for j, d in enumerate(data):
+				worksheet.write(i, j, d)
+		workbook.save(path)  # 保存工作簿
 
 
-def _write_xls(path, datas):  # 写xls
-	file = xlwt.Workbook()  # 文件对象
+class MyXlsx(MyFileIO):
+	@staticmethod
+	def read(path):
+		workbook = openpyxl.load_workbook(path, read_only=True)  # 获取工作簿（只读模式）
+		worksheet = workbook.active  # 获取当前工作表
 
-	for sheetname in datas:  # 遍历表名
-		sheet = file.add_sheet(sheetname)  # 创建表
-		data = datas[sheetname]  # 单张表数据集合
-		row = len(data)  # 行数
-		col = 0 if row == 0 else len(data[0])  # 列数
-		for r in range(row):  # 遍历行
-			for c in range(col):  # 遍历单元格
-				sheet.write(r, c, data[r][c])  # 写入单元格数据（起始索引为0）
+		datas = [[d.value if d.value is not None else "" for d in data] for data in worksheet.rows]
+		workbook.close()  # 关闭工作簿
+		return datas
 
-	file.save(path)  # 保存文件
+	@staticmethod
+	def write(path, datas):
+		workbook = openpyxl.Workbook(write_only=True)  # 创建工作簿（只写模式）
+		worksheet = workbook.create_sheet()  # 创建工作表
+
+		for data in datas:
+			worksheet.append(data)
+		workbook.save(path)  # 保存工作簿
+		workbook.close()  # 关闭工作簿
+
+
+FILE_TYPES = {
+	"csv": MyCsv,
+	"json": MyJson,
+	"pkl": MyPickle,
+	"xls": MyXls,
+	"xlsx": MyXlsx
+}  # 文件类型
+
+
+def read(path):
+	"""
+	读取文件
+	:param path: 文件路径
+	:return: 文件内容
+	"""
+	file_type = path.split(".")[-1]
+	if file_type in FILE_TYPES:
+		return FILE_TYPES[file_type].read(path)
+	else:
+		return MyFileIO.read(path)
+
+
+def write(path, datas):
+	"""
+	写入文件
+	:param path: 文件路径
+	:param datas: 文件内容
+	"""
+	file_type = path.split(".")[-1]
+	if file_type in FILE_TYPES:
+		FILE_TYPES[file_type].write(path, datas)
+	else:
+		MyFileIO.write(path, datas)
