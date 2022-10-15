@@ -6,7 +6,7 @@ import xlrd
 import xlwt
 
 
-class MyFileIO:  # 通用读写类
+class MyFileIO:
 	@staticmethod
 	def read(path):
 		with open(path, mode="r", encoding="utf-8") as file:
@@ -108,11 +108,11 @@ def read(path):
 	:param path: 文件路径
 	:return: 文件内容
 	"""
-	file_type = path.split(".")[-1]
+	file_type = path.split(".")[-1]  # 文件类型
 	if file_type in FILE_TYPES:
 		return FILE_TYPES[file_type].read(path)
 	else:
-		return MyFileIO.read(path)
+		return MyFileIO.read(path)  # 通用读写类
 
 
 def write(path, datas):
@@ -121,8 +121,8 @@ def write(path, datas):
 	:param path: 文件路径
 	:param datas: 文件内容
 	"""
-	file_type = path.split(".")[-1]
+	file_type = path.split(".")[-1]  # 文件类型
 	if file_type in FILE_TYPES:
 		FILE_TYPES[file_type].write(path, datas)
 	else:
-		MyFileIO.write(path, datas)
+		MyFileIO.write(path, datas)  # 通用读写类
