@@ -33,13 +33,12 @@ def crawl(urls, cookie=None, parser=None, attrs=None, proxy="", folder="", encod
 		"encoding": encoding
 	}
 
-	tic = time.time()
+	tictoc = time.time()
 	if isinstance(urls, list):
 		datas = StaticCrawler(params).crawl()  # 静态爬虫
 	else:
 		datas = DynamicCrawler(params).crawl()  # 动态爬虫
-	toc = time.time()
-	print(f"[CRAWLED IN]    {toc - tic}")
+	print(f"[CRAWLED IN]    {time.time() - tictoc}")
 	return datas
 
 
@@ -54,8 +53,8 @@ def get_cookie(url):
 
 class StaticCrawler:
 	_HEADERS = {
-		"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0"
-		".0.0 Safari/537.36 Edg/105.0.1343.53"
+		"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0"
+		".0.0 Safari/537.36 Edg/106.0.1370.42"
 	}  # 请求头
 
 	def __init__(self, params):
