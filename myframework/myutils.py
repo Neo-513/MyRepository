@@ -1,23 +1,17 @@
 import collections
-import jieba
 import json
 
 
-def myprint(items, trace=True, tab=False):
+def myprint(items, trace=True):
 	"""迭代打印
 	:param items: 待打印集合
 	:param trace: 是否打印信息
-	:param tab: 是否使用tab进行连接
 	"""
 	if items:  # 判断是否为空
 		if isinstance(items, dict):
-			if tab:
-				for k, v in items.items():
-					print(f"{k}\t{v}")
-			else:
-				max_len = max(map(lambda x: len(str(x)), items))  # 列表元素最大长度
-				for k, v in items.items():
-					print(f"{k:<{max_len + 4}}{v}")
+			max_len = max(map(lambda x: len(str(x)), items))  # 列表元素最大长度
+			for k, v in items.items():
+				print(f"{k:<{max_len + 4}}{v}")
 		else:
 			for item in items:
 				print(item)
@@ -63,20 +57,3 @@ def beautify_dic(dic):
 	:param dic: 待格式化打印字典
 	"""
 	print(json.dumps(dic, indent=4, ensure_ascii=False))
-
-
-def default_dic(item_type):
-	"""获取含有默认数据类型的字典
-	:param item_type: 默认数据类型
-	:return: 含有默认数据类型的字典
-	"""
-	return collections.defaultdict(item_type)
-
-
-def analyze_nlp(kws):
-	"""对中文进行分词
-	:param kws: 待分词列表
-	:return: 键名为分词、键值为个数的字典
-	"""
-	keywords = sum(map(lambda x: jieba.lcut(x), kws), [])
-	return lst2dic(keywords)
