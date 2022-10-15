@@ -78,8 +78,7 @@ class StaticCrawler:
 			os.mkdir(self.folder)  # 新建文件夹
 
 	def crawl(self):
-		if self.proxy:
-			asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # 设置允许代理策略
+		asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # 设置策略
 		asyncio.run(self._main())  # 异步执行爬取任务列表
 
 		if not self.folder:
